@@ -5,6 +5,8 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import numpy as np
 from uniforme import UniformWindow
+from exponencial import ExponentialWindow
+from normal import NormalWindow
 
 class HistogramWindow(QWidget):
     def __init__(self, numeros, k_intervalos):
@@ -50,10 +52,10 @@ class HistogramWindow(QWidget):
         uniform_button.clicked.connect(self.open_uniform_window)
 
         exponential_button = QPushButton("Exponencial")
-        #exponential_button.clicked.connect(self.open_exponential_comparison_window)
+        exponential_button.clicked.connect(self.open_exponential_window)
 
         normal_button = QPushButton("Normal")
-        #normal_button.clicked.connect(self.open_normal_comparison_window)
+        normal_button.clicked.connect(self.open_normal_window)
 
         button_layout = QHBoxLayout()
         button_layout.addWidget(uniform_button)
@@ -112,10 +114,24 @@ class HistogramWindow(QWidget):
         ax.grid(True)
         self.canvas_normal.draw()
 
+    def close_histogram_window(self):
+        self.close()
+
     def open_uniform_window(self):
-        self.uniform_window = UniformWindow(parent=self)
+        self.close_histogram_window()
+        self.uniform_window = UniformWindow(self.numeros, self.k_intervalos, parent=self)
         self.uniform_window.valuesConfirmed.connect(self.handle_uniform_values)
         self.uniform_window.show()
+
+    def open_exponential_window(self):
+        self.close_histogram_window()
+        self.exponential_window = ExponentialWindow()
+        self.exponential_window.show()
+
+    def open_normal_window(self):
+        self.close_histogram_window()
+        self.normal_window = NormalWindow()
+        self.normal_window.show()
 
     def handle_uniform_values(self, a, b):
         # Aquí puedes utilizar los valores de A y B para realizar las pruebas de bondad de ajuste
