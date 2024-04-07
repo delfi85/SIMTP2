@@ -124,9 +124,13 @@ class HistogramWindow(QWidget):
         self.uniform_window.show()
 
     def open_exponential_window(self):
-        self.close_histogram_window()
-        self.exponential_window = ExponentialWindow()
-        self.exponential_window.show()
+        try:
+            self.close_histogram_window()
+            self.exponential_window = ExponentialWindow(self.numeros, self.k_intervalos)
+            self.exponential_window.valuesConfirmed.connect(self.handle_exponential_values)
+            self.exponential_window.show()
+        except Exception as e:
+            QMessageBox.critical(None, "Error", f"Ha ocurrido un error al abrir la ventana exponencial: {str(e)}")
 
     def open_normal_window(self):
         self.close_histogram_window()
@@ -136,6 +140,14 @@ class HistogramWindow(QWidget):
     def handle_uniform_values(self, a, b):
         # Aquí puedes utilizar los valores de A y B para realizar las pruebas de bondad de ajuste
         QMessageBox.information(self, "Valores de Uniforme", f"A: {a}, B: {b}")
+
+    def handle_exponential_values(self, lambda_value):
+        try:
+            QMessageBox.information(self, "Valores Exponenciales",
+                                    f"Valor de lambda: {lambda_value}")
+        except Exception as e:
+            QMessageBox.critical(None, "Error", f"Ha ocurrido un error al manejar los valores exponenciales: {str(e)}")
+
 
 def main():
     try:

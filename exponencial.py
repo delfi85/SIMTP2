@@ -1,10 +1,24 @@
-from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QVBoxLayout, QLineEdit, QMessageBox
+import math
+import os
+import sys
+import tempfile
+
+import openpyxl
+
+from test_chi2_exponencial import ChiExpWindow
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QVBoxLayout, QLineEdit, QMessageBox, QApplication
+
 
 class ExponentialWindow(QWidget):
-    def __init__(self):
-        super().__init__()
+    valuesConfirmed = pyqtSignal(float, list)
 
+    def __init__(self, numeros, k_intervalos, parent=None):
+        super().__init__(parent)
         self.setWindowTitle("Distribución Exponencial")
+        self.numeros = numeros
+        self.k_intervalos = k_intervalos
+        self.test_chi_cuadrado = None
 
         layout = QVBoxLayout()
 
@@ -28,6 +42,27 @@ class ExponentialWindow(QWidget):
                 QMessageBox.critical(self, "Error", "El valor de lambda debe ser mayor que 0.")
             else:
                 QMessageBox.information(self, "Éxito", f"Valor de lambda aceptado: {lambda_value}")
-                # Aquí puedes realizar cualquier acción adicional que desees con el valor de lambda
+
+
+            numeros_exponenciales = [-(1/lambda_value) * math.log(1 - rnd) for rnd in self.numeros]
+
+            # Emitir la señal con los valores de lambda y los números exponenciales
+            self.valuesConfirmed.emit(lambda_value, numeros_exponenciales)
+
+            # Crear y mostrar la ventana de ChiExpWindow
+            self.test_chi_cuadrado = ChiExpWindow(numeros_exponenciales, self.k_intervalos, lambda_value)
+            self.test_chi_cuadrado.show()
+
+
         except ValueError:
             QMessageBox.critical(self, "Error", "Por favor, ingrese un valor numérico para lambda.")
+
+if __name__ == "__main__":
+    # Datos de ejemplo
+    numeros = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    k_intervalos = 4
+
+    app = QApplication(sys.argv)
+    window = ExponentialWindow(numeros, k_intervalos)
+    window.show()
+    sys.exit(app.exec_())
