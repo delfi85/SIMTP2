@@ -1,9 +1,6 @@
 import math
-import os
 import sys
-import tempfile
 
-import openpyxl
 
 from test_chi2_exponencial import ChiExpWindow
 from PyQt5.QtCore import pyqtSignal
