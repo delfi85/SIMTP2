@@ -76,9 +76,10 @@ class MainWindow(QWidget):
 
     def generar_numeros_aleatorios(self, cantidad):
         self.numeros_generados = []
-        for _ in range(cantidad):
-            numero = round(random.random(), 4)
-            self.numeros_generados.append(numero)
+        while len(self.numeros_generados) < cantidad:
+            numero = round(random.uniform(0, 1), 4)
+            if 0 < numero < 1:
+                self.numeros_generados.append(numero)
 
     def guardar_excel(self):
         # Crear archivo Excel

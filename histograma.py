@@ -127,7 +127,6 @@ class HistogramWindow(QWidget):
         try:
             self.close_histogram_window()
             self.exponential_window = ExponentialWindow(self.numeros, self.k_intervalos)
-            self.exponential_window.valuesConfirmed.connect(self.handle_exponential_values)
             self.exponential_window.show()
         except Exception as e:
             QMessageBox.critical(None, "Error", f"Ha ocurrido un error al abrir la ventana exponencial: {str(e)}")
