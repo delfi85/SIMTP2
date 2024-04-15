@@ -1,10 +1,11 @@
 import sys
-from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QMessageBox, QApplication, QLabel, \
     QHBoxLayout
 import numpy as np
 from scipy.stats import chi2
+
+from histogramaDist import HistogramDistWindow
 
 
 class ChiSquareWindow(QWidget):
@@ -88,6 +89,10 @@ class ChiSquareWindow(QWidget):
                 formatted_value = "{:.4f}".format(value) if isinstance(value, float) else str(value)
                 item = QTableWidgetItem(formatted_value)
                 self.table.setItem(i, j, item)
+
+        self.histogram_window = HistogramDistWindow(self.numeros, self.k_intervalos)
+        # Mostrar el HistogramWindow
+        self.histogram_window.show()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

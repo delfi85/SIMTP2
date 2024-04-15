@@ -1,9 +1,11 @@
 import sys
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QApplication, QLabel, \
-    QHBoxLayout, QPushButton, QMessageBox
+    QHBoxLayout, QPushButton
 import numpy as np
 from scipy.stats import chi2, expon
+
+from histogramaDist import HistogramDistWindow
 
 
 class ChiExpWindow(QWidget):
@@ -35,7 +37,7 @@ class ChiExpWindow(QWidget):
 
         # Mostrar la suma de la columna de Chi cuadrado y el Chi tabulado
         chi_cuadrado_suma = sum(row[5] for row in self.datos_tabla)
-        chi_tabulado = chi2.isf(0.1, self.k_intervalos - 1)
+        chi_tabulado = chi2.isf(0.1, self.k_intervalos - 1 - 1)
 
         input_layout = QHBoxLayout()
 
@@ -91,43 +93,54 @@ class ChiExpWindow(QWidget):
 
         return datos_tabla
 
-    def agrupar_intervalos(self, datos_tabla_original):
-        datos_tabla_agrupada = []
-        frecuencias_esp_acumulada = 0
-        frecuencias_obs_acumulada = 0
-        intervalo_agrupado = None
+    def agrupar_intervalos(self, datos_tabla):
+        # Inicializar el vector de resultados
+        datos_tabla_agrupados = []
 
-        for fila in datos_tabla_original:
-            intervalo, limite_inferior, limite_superior, frecuencia_obs, frecuencia_esp, chi_cuadrado = fila
+        # Inicializar variables para almacenar los datos del intervalo actual
+        intervalo_actual = None
+        frecuencia_observada_actual = 0
+        frecuencia_esperada_actual = 0
 
-            if frecuencia_esp < 5:
-                if intervalo_agrupado is None:
-                    intervalo_agrupado = intervalo
+        # Recorrer cada fila en los datos de la tabla
+        for fila in datos_tabla:
+            # Si la frecuencia esperada del intervalo actual es mayor a 5 o si es el primer intervalo
+            if frecuencia_esperada_actual > 5 or intervalo_actual is None:
+                # Agregar el intervalo actual al vector de resultados
+                if intervalo_actual is not None:
+                    datos_tabla_agrupados.append([intervalo_actual, limite_inferior_actual, limite_superior_actual,
+                                                  frecuencia_observada_actual, frecuencia_esperada_actual,
+                                                  ((
+                                                               frecuencia_observada_actual - frecuencia_esperada_actual) ** 2) / frecuencia_esperada_actual])
 
-                frecuencias_obs_acumulada += frecuencia_obs
-                frecuencias_esp_acumulada += frecuencia_esp
+                # Iniciar un nuevo intervalo con los datos de la fila actual
+                intervalo_actual, limite_inferior_actual, limite_superior_actual, frecuencia_observada_actual, frecuencia_esperada_actual = \
+                fila[0], fila[1], fila[2], fila[3], fila[4]
             else:
-                if intervalo_agrupado is not None:
-                    chi_cuadrado_calculado = ((frecuencias_obs_acumulada - frecuencias_esp_acumulada) ** 2) / frecuencias_esp_acumulada
-                    datos_tabla_agrupada.append([f"{intervalo_agrupado}-{intervalo}",
-                                                 frecuencias_obs_acumulada, frecuencias_esp_acumulada, chi_cuadrado_calculado])
-                    intervalo_agrupado = None
-                    frecuencias_esp_acumulada = 0
-                    frecuencias_obs_acumulada = 0
+                # Si la frecuencia esperada del intervalo actual es menor o igual a 5, agregar los datos de la fila actual al intervalo actual
+                intervalo_actual = f"{intervalo_actual}-{fila[0]}"
+                limite_superior_actual = fila[2]
+                frecuencia_observada_actual += fila[3]
+                frecuencia_esperada_actual += fila[4]
 
-                # Calcular el chi cuadrado para el intervalo no agrupado
-                chi_cuadrado_calculado = ((frecuencia_obs - frecuencia_esp) ** 2) / frecuencia_esp
-                datos_tabla_agrupada.append([intervalo, frecuencia_obs, frecuencia_esp, chi_cuadrado_calculado])
+        # Si la frecuencia esperada del último intervalo es menor o igual a 5
+        if frecuencia_esperada_actual <= 5 and len(datos_tabla_agrupados) > 0:
+            # Agregar los datos del último intervalo al penúltimo intervalo
+            datos_tabla_agrupados[-1][0] = f"{datos_tabla_agrupados[-1][0]}-{intervalo_actual}"
+            datos_tabla_agrupados[-1][2] = limite_superior_actual
+            datos_tabla_agrupados[-1][3] += frecuencia_observada_actual
+            datos_tabla_agrupados[-1][4] += frecuencia_esperada_actual
+            datos_tabla_agrupados[-1][5] = ((datos_tabla_agrupados[-1][3] - datos_tabla_agrupados[-1][4]) ** 2) / \
+                                           datos_tabla_agrupados[-1][4]
+        else:
+            # Agregar el último intervalo al vector de resultados
+            datos_tabla_agrupados.append([intervalo_actual, limite_inferior_actual, limite_superior_actual,
+                                          frecuencia_observada_actual, frecuencia_esperada_actual,
+                                          ((
+                                                       frecuencia_observada_actual - frecuencia_esperada_actual) ** 2) / frecuencia_esperada_actual])
 
-        # Si quedan intervalos agrupados al final, agregarlos
-        if intervalo_agrupado is not None:
-            # Calcular el chi cuadrado para el intervalo agrupado final
-            chi_cuadrado_calculado = ((frecuencias_obs_acumulada - frecuencias_esp_acumulada) ** 2) / frecuencias_esp_acumulada
-            datos_tabla_agrupada.append([f"{intervalo_agrupado}-{intervalo}",
-                                         frecuencias_obs_acumulada, frecuencias_esp_acumulada, chi_cuadrado_calculado])
-
-
-        return datos_tabla_agrupada
+        # Devolver el vector de resultados
+        return datos_tabla_agrupados
 
     def mostrar_resultados_en_tabla(self, datos_tabla):
         self.table.setRowCount(len(datos_tabla))
@@ -141,10 +154,17 @@ class ChiExpWindow(QWidget):
                 item = QTableWidgetItem(formatted_value)
                 self.table.setItem(i, j, item)
 
+        self.histogram_window = HistogramDistWindow(self.numeros, self.k_intervalos)
+        # Mostrar el HistogramWindow
+        self.histogram_window.show()
+
     def mostrar_tabla_agrupada(self):
         # Crear y mostrar la ventana de ChiExpWindow para la tabla agrupada
         self.agrupada_window = ChiExpWindowAgrupada(self.agrupar_intervalos(self.datos_tabla))
         self.agrupada_window.show()
+
+        if self.histogram_window is not None:
+            self.histogram_window.close()
 
 class ChiExpWindowAgrupada(QWidget):
     def __init__(self, datos_tabla_agrupada, parent=None):
@@ -165,10 +185,10 @@ class ChiExpWindowAgrupada(QWidget):
         k_intervalos = len(datos_tabla_agrupada)
 
         # Calcular la suma de la columna de Chi cuadrado
-        chi_cuadrado_suma = sum(row[3] for row in datos_tabla_agrupada)
+        chi_cuadrado_suma = sum(row[5] for row in datos_tabla_agrupada)
 
         # Calcular el valor crítico de chi-cuadrado
-        chi_tabulado = chi2.isf(0.1, k_intervalos - 1)
+        chi_tabulado = chi2.isf(0.1, k_intervalos - 1 - 1)
 
         # df.count(axis=1) --> df es la tabla de dónde sacamos los datos, axis es la columna
         # De esta manera, logro contar las filas de la tabla agrupada lo cuál serían los k_intervalos
@@ -210,8 +230,8 @@ class ChiExpWindowAgrupada(QWidget):
     def mostrar_resultados_en_tabla(self, datos_tabla):
         self.table.setRowCount(len(datos_tabla))
         self.table.setColumnCount(len(datos_tabla[0]))
-        self.table.setHorizontalHeaderLabels(["Intervalos", "Fr. Observada", "Fr. Esperada", "Chi^2"])
-
+        self.table.setHorizontalHeaderLabels(["Intervalos", "Límite Inferior", "Límite Superior",
+                                              "Fr. Observada", "Fr. Esperada", "Chi^2"])
         for i, row in enumerate(datos_tabla):
             for j, value in enumerate(row):
                 # Formatear los números con cuatro decimales

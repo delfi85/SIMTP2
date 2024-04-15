@@ -54,11 +54,16 @@ class UniformWindow(QMainWindow):
 
             # Crear y mostrar la ventana de ChiSquareWindow
             self.test_chi_cuadrado = ChiSquareWindow(numeros_uniformes, self.k_intervalos)
+
+            # Especificamos el tamaño de la ventana de la tabla
+            self.test_chi_cuadrado.setGeometry(1200, 50, 1300, 1200)
+
             self.test_chi_cuadrado.show()
 
         except ValueError as e:
             QMessageBox.critical(self, "Error", str(e))
             print("Error:", e)  # Mensaje de depuración para imprimir la excepción
+
 
 if __name__ == "__main__":
     # Datos de ejemplo

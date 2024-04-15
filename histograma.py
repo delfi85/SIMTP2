@@ -133,7 +133,7 @@ class HistogramWindow(QWidget):
 
     def open_normal_window(self):
         self.close_histogram_window()
-        self.normal_window = NormalWindow()
+        self.normal_window = NormalWindow(self.numeros, self.k_intervalos)
         self.normal_window.show()
 
     def handle_uniform_values(self, a, b):

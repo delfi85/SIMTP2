@@ -2,9 +2,7 @@ import math
 import os
 import sys
 import tempfile
-
 import openpyxl
-
 from test_chi2_exponencial import ChiExpWindow
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QVBoxLayout, QLineEdit, QMessageBox, QApplication
@@ -54,7 +52,13 @@ class ExponentialWindow(QWidget):
 
         # Crear y mostrar la ventana de ChiExpWindow
         self.test_chi_cuadrado = ChiExpWindow(numeros_exponenciales, self.k_intervalos, lambda_value)
+
+        # Especificamos el tamaño de la ventana de la tabla
+        self.test_chi_cuadrado.setGeometry(1200, 50, 1300, 1200)
+
         self.test_chi_cuadrado.show()
+
+        self.close()
 
     def guardar_excel(self, numeros):
         # Crear archivo Excel
