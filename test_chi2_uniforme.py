@@ -3,7 +3,7 @@ from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem, QMessageBox, QApplication, QLabel, \
     QHBoxLayout
 import numpy as np
-from scipy.stats import chi2
+import scipy.stats as stats
 from histogramaDist import HistogramDistWindow
 
 class ChiSquareWindow(QWidget):
@@ -25,7 +25,7 @@ class ChiSquareWindow(QWidget):
 
         # Mostrar la suma de la columna de Chi cuadrado y el Chi tabulado
         chi_cuadrado_suma = sum(row[5] for row in datos_tabla)
-        chi_tabulado = chi2.ppf(0.1, self.k_intervalos - 1)
+        chi_tabulado = stats.chi2.ppf(0.9, self.k_intervalos - 1)
 
         input_layout = QHBoxLayout()
 
