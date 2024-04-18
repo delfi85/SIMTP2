@@ -1,8 +1,10 @@
 import sys
+import tempfile
 
+import openpyxl
 from PyQt5.QtWidgets import QWidget, QPushButton, QLabel, QVBoxLayout, QLineEdit, QMessageBox, QApplication
 import numpy as np
-from tablaNormal2 import NormWindow
+from test_chi2_normal import NormWindow
 import pandas as pd
 import os
 
@@ -52,11 +54,11 @@ class NormalWindow(QWidget):
 
         return z
 
-    def box_muller_transform2(self, u, mu, sigma):
+    def box_muller_transform2(self, numeros, mu, desviacion):
         # Inicializa un vector vacío para almacenar los números generados, pero comprueba
         # que el tamaño del vector sea par, ya que necesitamos siempre dos numeros para generar
         # otros dos, por lo tanto si sobra un numero se lo desprecia
-        longitud = len(u)
+        longitud = len(numeros)
         if longitud % 2 == 0:
             z = np.empty(longitud)
         else:
@@ -68,11 +70,11 @@ class NormalWindow(QWidget):
             # Aplica la transformación de Box-Muller a cada par de elementos
             # Tenemos que aplicar la formula para convertir el vector de numeros random
             # Con la funcion max nos aseguramos que nunca aparezca un 0 que haga fallar al programa
-            z[i] = round((np.sqrt((-2) * np.log(max(u[i], 0.0001))) * np.cos(2 * np.pi * u[i + 1])) * sigma + mu, 4)
-            z[i + 1] = round((np.sqrt((-2) * np.log(max(u[i], 0.0001))) * np.sin(2 * np.pi * u[i + 1])) * sigma + mu, 4)
+            z[i] = round((np.sqrt((-2) * np.log(max(numeros[i], 0.0001))) * np.cos(2 * np.pi * numeros[i + 1])) * desviacion + mu, 4)
+            z[i + 1] = round((np.sqrt((-2) * np.log(max(numeros[i], 0.0001))) * np.sin(2 * np.pi * numeros[i + 1])) * desviacion + mu, 4)
 
         # Esto lo imprime por consola para verificar si no tomamos el ultimo valor en caso de ser impar
-        print(len(u), len(z))
+        print(len(numeros), len(z))
         return z
 
     def confirm_parameters(self):
@@ -90,7 +92,9 @@ class NormalWindow(QWidget):
                                         f"Valores aceptados: Media={mean_value}, Varianza={variance_value}")
                 # Aquí puedes realizar cualquier acción adicional que desees con la media y la varianza
                 normales = self.box_muller_transform2(self.numeros, mean_value, variance_value)
-                print(normales)
+
+                self.guardar_excel(normales)
+
                 if np.isinf(normales).any():
                     print("El vector contiene al menos un valor infinito")
                 else:
@@ -110,6 +114,23 @@ class NormalWindow(QWidget):
         except ValueError as e:
             QMessageBox.critical(self, "Error", "Por favor, ingrese valores numéricos para la media y la varianza.")
             print(e)
+
+    def guardar_excel(self, numeros):
+        # Crear archivo Excel
+        wb = openpyxl.Workbook()
+        sheet = wb.active
+        sheet.title = "Numeros Aleatorios"
+
+        for i, numero in enumerate(numeros, start=1):
+            sheet.cell(row=i, column=1, value=numero)
+
+        # Guardar archivo Excel como archivo temporal
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as temp_file:
+            temp_filename = temp_file.name
+            wb.save(temp_filename)
+
+        # Abrir el archivo temporal en el sistema
+        os.startfile(temp_filename)
 
 if __name__ == "__main__":
     # Datos de ejemplo

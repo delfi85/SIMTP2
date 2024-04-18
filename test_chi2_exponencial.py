@@ -4,7 +4,6 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem
     QHBoxLayout, QPushButton
 import numpy as np
 from scipy.stats import chi2, expon
-
 from histogramaDist import HistogramDistWindow
 
 
@@ -118,9 +117,9 @@ class ChiExpWindow(QWidget):
                 fila[0], fila[1], fila[2], fila[3], fila[4]
             else:
                 # Si la frecuencia esperada del intervalo actual es menor o igual a 5, agregar los datos de la fila actual al intervalo actual
-                intervalo_actual = f"{intervalo_actual}-{fila[0]}"
+                intervalo_actual = f"{intervalo_actual}-{fila[0]}" # Concatena los intervalos
                 limite_superior_actual = fila[2]
-                frecuencia_observada_actual += fila[3]
+                frecuencia_observada_actual += fila[3] # Hace las sumas para la agrupación
                 frecuencia_esperada_actual += fila[4]
 
         # Si la frecuencia esperada del último intervalo es menor o igual a 5

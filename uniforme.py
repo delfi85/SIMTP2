@@ -1,4 +1,8 @@
+import os
 import sys
+import tempfile
+
+import openpyxl
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QPushButton, QLineEdit, QMessageBox, QMainWindow, QApplication
 from PyQt5.QtCore import pyqtSignal
 from test_chi2_uniforme import ChiSquareWindow
@@ -49,6 +53,8 @@ class UniformWindow(QMainWindow):
             # Utilizar los números generados previamente en la fórmula A + RND(B - A)
             numeros_uniformes = [a + numero * (b - a) for numero in self.numeros]
 
+            self.guardar_excel(numeros_uniformes)
+
             # Emitir la señal con los valores de A y B
             self.valuesConfirmed.emit(a, b, numeros_uniformes)
 
@@ -64,6 +70,22 @@ class UniformWindow(QMainWindow):
             QMessageBox.critical(self, "Error", str(e))
             print("Error:", e)  # Mensaje de depuración para imprimir la excepción
 
+    def guardar_excel(self, numeros):
+        # Crear archivo Excel
+        wb = openpyxl.Workbook()
+        sheet = wb.active
+        sheet.title = "Numeros Aleatorios"
+
+        for i, numero in enumerate(numeros, start=1):
+            sheet.cell(row=i, column=1, value=numero)
+
+        # Guardar archivo Excel como archivo temporal
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as temp_file:
+            temp_filename = temp_file.name
+            wb.save(temp_filename)
+
+        # Abrir el archivo temporal en el sistema
+        os.startfile(temp_filename)
 
 if __name__ == "__main__":
     # Datos de ejemplo

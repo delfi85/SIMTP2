@@ -4,9 +4,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QTableWidget, QTableWidgetItem
     QHBoxLayout
 import numpy as np
 from scipy.stats import chi2
-
 from histogramaDist import HistogramDistWindow
-
 
 class ChiSquareWindow(QWidget):
     def __init__(self, numeros, k_intervalos, parent=None):
@@ -59,6 +57,7 @@ class ChiSquareWindow(QWidget):
         # Calcular los límites de los intervalos
         min_value = min(numeros)
         max_value = max(numeros)
+        # Amplitud
         interval_length = (max_value - min_value) / k_intervalos
         limites_inferiores = [min_value + i * interval_length for i in range(k_intervalos)]
         limites_superiores = [limite_inf + interval_length for limite_inf in limites_inferiores]

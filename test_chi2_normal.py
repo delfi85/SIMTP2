@@ -122,6 +122,7 @@ class NormWindow(QWidget):
                 frecuencia_observada_actual += fila[3]
                 frecuencia_esperada_actual += fila[4]
 
+        # Termina de recorrer con el for y busca el caso en el que el ultimo intervalo sea menor su FE a 5
         # Si la frecuencia esperada del último intervalo es menor o igual a 5
         if frecuencia_esperada_actual <= 5 and len(datos_tabla_agrupados) > 0:
             # Agregar los datos del último intervalo al penúltimo intervalo
