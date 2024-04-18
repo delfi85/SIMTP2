@@ -37,23 +37,6 @@ class NormalWindow(QWidget):
 
         self.setLayout(layout)
 
-    def box_muller_transform(self, u, mu, sigma):
-        # Inicializa un vector vacío para almacenar los números generados
-        z = np.empty(len(u))
-
-        for i in range(0, len(u), 2):
-            # Aplica la transformación de Box-Muller a cada par de elementos
-            R = np.sqrt(-2.0 * np.log(u[i]))
-            theta = 2.0 * np.pi * u[i + 1] if i + 1 < len(u) else 2.0 * np.pi * np.random.uniform(0, 1)
-            z[i] = R * np.cos(theta)
-            if i + 1 < len(u):
-                z[i + 1] = R * np.sin(theta)
-
-        # Ajusta los números generados a la media y la varianza deseadas
-        z = mu + z * sigma
-
-        return z
-
     def box_muller_transform2(self, numeros, mu, desviacion):
         # Inicializa un vector vacío para almacenar los números generados, pero comprueba
         # que el tamaño del vector sea par, ya que necesitamos siempre dos numeros para generar

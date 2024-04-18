@@ -189,7 +189,7 @@ class NormWindowAgrupada(QWidget):
         chi_cuadrado_suma = sum(row[5] for row in datos_tabla_agrupada)
 
         # Calcular el valor crítico de chi-cuadrado
-        chi_tabulado = chi2.isf(0.1, k_intervalos - 2 - 1)
+        chi_tabulado = stats.chi2.ppf(0.9, k_intervalos - 2 - 1)
 
         # df.count(axis=1) --> df es la tabla de dónde sacamos los datos, axis es la columna
         # De esta manera, logro contar las filas de la tabla agrupada lo cuál serían los k_intervalos
